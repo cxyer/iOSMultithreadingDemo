@@ -16,7 +16,7 @@
     });
     NSLog(@"3========%@",[NSThread currentThread]);
     ```
-    dispatch_sync在主线程，主线程需要等待dispatch_sync执行完才能继续执行，而dispatch_sync是同步执行需要等待主线程执行完才能继续执行，这样双方互相等待造成线程死锁
+    dispatch_sync在主线程，主线程需要等待dispatch_sync执行完才能继续执行，而dispatch_sync是同步执行需要等待主线程执行完才能继续执行，这样双方互相等待造成线程死锁
     #### 解决：dispatch_sync换成异步执行dispatch_async，或者dispatch_sync加入并行队列
     5. 创建队列
     ```
@@ -24,8 +24,8 @@
     self.concurrentQueue = dispatch_queue_create("com.cxy.concurrentQueue", DISPATCH_QUEUE_CONCURRENT);
     ```
     #### 四种组合方式
-    1. 串行队列 + 同步执行：不会开辟新线程，顺序执行
-    2. 串行队列 + 异步执行：会开辟新线程，但是由于是串行队列，所以子线程会按顺序执行
+    1. 串行队列 + 同步执行：不会开辟新线程，顺序执行
+    2. 串行队列 + 异步执行：会开辟新线程，但是由于是串行队列，所以子线程会按顺序执行
     3. 并行队列 + 同步执行：不会开辟新线程，顺序执行
     4. 并行队列 + 异步执行：会开辟新线程，随机顺序
     ***
@@ -79,7 +79,7 @@
         NSLog(@"4========%@",[NSThread currentThread]);
     });
     ```
-    1、2和3、4的中间一定是dispatch_barrier_async
+    1、2和3、4的中间一定是dispatch_barrier_async
 
     10. dispatch_apply：重复执行，如果放在串行队列，则顺序执行，如果放在并行队列，则随机执行
     ```
