@@ -1,4 +1,4 @@
-# iOS多线程
+# iOS多线程（GCD和NSOperation的选择主要看个人爱好吧，我就喜欢用GCD）
 1. Pthreads：基本很少用
 2. NSThread：感觉用到最多的就是[NSThread currentThread]
 3. GCD：目前苹果官方推荐的多线程开发方式
