@@ -106,6 +106,7 @@
         });
         ```
         结果按顺序执行
+     12. GCD定时器
 4. NSOperation/NSOperationQueue：苹果对于GCD的封装
     1. NSOperation：抽象类，需要自定义子类，很少用
     2. NSBlockOperation/NSInvocationOperation：系统提供的NSOperation子类，一个是用block，一个是用selector
