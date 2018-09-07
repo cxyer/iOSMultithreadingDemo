@@ -126,10 +126,12 @@
 
     3. NSOperationQueue：管理NSOperation，不需要调用start
         1. 任务优先级：queuePriority
-        2. 添加依赖关系：[A addDependency:B] B先执行完才能执行A
-        3. 最大并发数：maxConcurrentOperationCount 不要开太多，建议2~3为宜
-        4. 取消所有操作：cancelAllOperations；暂停所有操作：setSuspended 比如用户在操作UI的时候可以暂停队列
-        5. 操作完成的监听：setCompletionBlock 
+        2. 添加操作：addOperation
+        3. 添加依赖关系：[A addDependency:B] B先执行完才能执行A（注意添加依赖必须在添加操作前完成）
+        4. 最大并发数：maxConcurrentOperationCount 不要开太多，建议2~3为宜
+        5. 取消所有操作：cancelAllOperations；暂停所有操作：setSuspended 比如用户在操作UI的时候可以暂停队列
+        6. 操作完成的监听：setCompletionBlock 
+        7. 阻塞线程：- (void)waitUntilFinished; 阻塞当前线程，直到该操作完成
 # 线程锁
 1. NSLock
     ```
