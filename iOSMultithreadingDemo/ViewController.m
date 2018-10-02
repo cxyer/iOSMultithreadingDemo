@@ -15,13 +15,14 @@
 
 @property (nonatomic, strong) dispatch_queue_t serialQueue;
 @property (nonatomic, strong) dispatch_queue_t concurrentQueue;
+@property (nonatomic, strong) dispatch_source_t timer;
 @end
 
 @implementation ViewController
 
 - (NSArray *)dataArr {
     if (!_dataArr) {
-        _dataArr = @[@"线程死锁",@"串行队列 + 同步执行",@"串行队列 + 异步执行",@"并行队列 + 同步执行",@"并行队列 + 异步执行",@"延时",@"dispatch_once",@"队列组",@"dispatch_barrier_async",@"dispatch_apply",@"信号量",@"NSBlockOperation",@"NSLock",@"@synchronized"];
+        _dataArr = @[@"线程死锁",@"串行队列 + 同步执行",@"串行队列 + 异步执行",@"并行队列 + 同步执行",@"并行队列 + 异步执行",@"延时",@"dispatch_once",@"队列组",@"dispatch_barrier_async",@"dispatch_apply",@"信号量",@"NSBlockOperation",@"NSLock",@"@synchronized",@"dispatch_set_target_queue",@"定时器"];
     }
     return _dataArr;
 }
@@ -29,7 +30,6 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
-    
     self.serialQueue = dispatch_queue_create("com.cxy.serialQueue", DISPATCH_QUEUE_SERIAL);
     self.concurrentQueue = dispatch_queue_create("com.cxy.concurrentQueue", DISPATCH_QUEUE_CONCURRENT);
     
@@ -84,6 +84,10 @@
         [self test13];
     } else if (indexPath.row == 13) {
         [self test14];
+    } else if (indexPath.row == 14) {
+        [self test15];
+    } else if (indexPath.row == 15) {
+        [self test16];
     }
 }
 
@@ -276,5 +280,35 @@
     }
 }
 
+//dispatch_set_target_queue
+- (void)test15 {
+    dispatch_queue_t serialQueue1 = dispatch_queue_create("com.cxy.serialQueue1", DISPATCH_QUEUE_SERIAL);
+    dispatch_queue_t serialQueue2 = dispatch_queue_create("com.cxy.serialQueue2", DISPATCH_QUEUE_SERIAL);
+    dispatch_queue_t serialQueue3 = dispatch_queue_create("com.cxy.serialQueue3", DISPATCH_QUEUE_SERIAL);
+    
+    dispatch_set_target_queue(serialQueue1, self.serialQueue);
+    dispatch_set_target_queue(serialQueue2, self.serialQueue);
+    dispatch_set_target_queue(serialQueue3, self.serialQueue);
+    dispatch_async(serialQueue1, ^{
+        NSLog(@"dispatch_set_target_queue 1");
+    });
+    dispatch_async(serialQueue2, ^{
+        NSLog(@"dispatch_set_target_queue 2");
+    });
+    dispatch_async(serialQueue3, ^{
+        NSLog(@"dispatch_set_target_queue 3");
+    });
+}
+
+//定时器
+- (void)test16 {
+    self.timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, dispatch_get_global_queue(0, 0));
+    dispatch_time_t start = dispatch_time(DISPATCH_TIME_NOW, 3 * NSEC_PER_SEC);
+    dispatch_source_set_timer(self.timer, start, 2 * NSEC_PER_SEC, 0);
+    dispatch_source_set_event_handler(self.timer, ^{
+        NSLog(@"dispatch_source_t");
+    });
+    dispatch_resume(self.timer);
+}
 
 @end
