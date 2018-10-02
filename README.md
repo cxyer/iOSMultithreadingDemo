@@ -203,8 +203,7 @@
         });
         ```
         结果按顺序执行
-     12. GCD定时器：注意timer一定要强引用
-     
+    12. GCD定时器：注意timer一定要强引用
         ```
         self.timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, dispatch_get_global_queue(0, 0));
         dispatch_time_t start = dispatch_time(DISPATCH_TIME_NOW, 3 * NSEC_PER_SEC);
@@ -214,7 +213,7 @@
         });
         dispatch_resume(self.timer);
         ```
-     13. dispatch_set_target_queue
+    13. dispatch_set_target_queue
         1. 改变queue的优先级，因为自定义创建的线程优先级都为default
         2. 比如存在多个串行队列，它们是并行执行的，如果使用```dispatch_set_target_queue```把第二个参数设置为串行队列，它们就会同步执行
             ```
@@ -235,11 +234,11 @@
                 NSLog(@"dispatch_set_target_queue 3");
             });
             ```
-        14. 暂停与恢复
-            ```
-            dispatch_suspend(queue);
-            dispatch_resume(queue);
-            ```
+    14. 暂停与恢复
+        ```
+        dispatch_suspend(queue);
+        dispatch_resume(queue);
+        ```
 4. NSOperation/NSOperationQueue：苹果对于GCD的封装
     1. NSOperation：抽象类，需要自定义子类，很少用
     2. NSBlockOperation/NSInvocationOperation：系统提供的NSOperation子类，一个是用block，一个是用selector
