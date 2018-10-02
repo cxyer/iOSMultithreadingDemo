@@ -1,9 +1,103 @@
 # iOS多线程
 1. Pthreads：基本很少用
-2. NSThread：感觉用到最多的就是[NSThread currentThread]
+2. NSThread：基本很少用
+    1. 获取当前线程：```[NSThread currentThread]```
+    2. 休眠当前线程
+        ```
+        + (void)sleepForTimeInterval:(NSTimeInterval)time;
+        + (void)sleepUntilDate:(NSDate *)date;
+        ```
+    3. 给线程命名：```[NSThread currentThread].name```
+    4. 其他接口
+        ```
+        @interface NSThread : NSObject  {
+        @private
+            id _private;
+            uint8_t _bytes[44];
+        }
+        //当前线程
+        @property (class, readonly, strong) NSThread *currentThread;
+
+        //创建新线程，前者是block方式（iOS10+），后者是selector方式
+        + (void)detachNewThreadWithBlock:(void (^)(void))block API_AVAILABLE(macosx(10.12), ios(10.0), watchos(3.0), tvos(10.0));
+        + (void)detachNewThreadSelector:(SEL)selector toTarget:(id)target withObject:(nullable id)argument;
+
+        //是否是多线程
+        + (BOOL)isMultiThreaded;
+        //维护一个字典保存一些信息，在整个线程的执行过程中都不变
+        @property (readonly, retain) NSMutableDictionary *threadDictionary;
+
+        //休眠当前线程
+        + (void)sleepUntilDate:(NSDate *)date;
+        + (void)sleepForTimeInterval:(NSTimeInterval)ti;
+
+        //结束进程
+        + (void)exit;
+
+        //线程优先级
+        + (double)threadPriority;
+        + (BOOL)setThreadPriority:(double)p;
+
+        //设置优先级，iOS8+推荐使用NSQualityOfService
+        @property double threadPriority API_AVAILABLE(macos(10.6), ios(4.0), watchos(2.0), tvos(9.0)); // To be deprecated; use qualityOfService below
+
+        @property NSQualityOfService qualityOfService API_AVAILABLE(macos(10.10), ios(8.0), watchos(2.0), tvos(9.0)); // read-only after the thread is started
+
+        //当前线程在栈空间的地址
+        @property (class, readonly, copy) NSArray<NSNumber *> *callStackReturnAddresses API_AVAILABLE(macos(10.5), ios(2.0), watchos(2.0), tvos(9.0));
+        //栈空间的符号表
+        @property (class, readonly, copy) NSArray<NSString *> *callStackSymbols API_AVAILABLE(macos(10.6), ios(4.0), watchos(2.0), tvos(9.0));
+
+        //线程名称
+        @property (nullable, copy) NSString *name API_AVAILABLE(macos(10.5), ios(2.0), watchos(2.0), tvos(9.0));
+        //栈大小
+        @property NSUInteger stackSize API_AVAILABLE(macos(10.5), ios(2.0), watchos(2.0), tvos(9.0));
+        //是否是主线程
+        @property (readonly) BOOL isMainThread API_AVAILABLE(macos(10.5), ios(2.0), watchos(2.0), tvos(9.0));
+        @property (class, readonly) BOOL isMainThread API_AVAILABLE(macos(10.5), ios(2.0), watchos(2.0), tvos(9.0)); // reports whether current thread is main
+        //获取主线程
+        @property (class, readonly, strong) NSThread *mainThread API_AVAILABLE(macos(10.5), ios(2.0), watchos(2.0), tvos(9.0));
+
+        //初始化
+        - (instancetype)init API_AVAILABLE(macos(10.5), ios(2.0), watchos(2.0), tvos(9.0)) NS_DESIGNATED_INITIALIZER;
+        - (instancetype)initWithTarget:(id)target selector:(SEL)selector object:(nullable id)argument API_AVAILABLE(macos(10.5), ios(2.0), watchos(2.0), tvos(9.0));
+        - (instancetype)initWithBlock:(void (^)(void))block API_AVAILABLE(macosx(10.12), ios(10.0), watchos(3.0), tvos(10.0));
+
+        //是否在执行
+        @property (readonly, getter=isExecuting) BOOL executing API_AVAILABLE(macos(10.5), ios(2.0), watchos(2.0), tvos(9.0));
+        //是否执行完成
+        @property (readonly, getter=isFinished) BOOL finished API_AVAILABLE(macos(10.5), ios(2.0), watchos(2.0), tvos(9.0));
+        //是否取消
+        @property (readonly, getter=isCancelled) BOOL cancelled API_AVAILABLE(macos(10.5), ios(2.0), watchos(2.0), tvos(9.0));
+        //取消线程
+        - (void)cancel API_AVAILABLE(macos(10.5), ios(2.0), watchos(2.0), tvos(9.0));
+        //开始线程
+        - (void)start API_AVAILABLE(macos(10.5), ios(2.0), watchos(2.0), tvos(9.0));
+
+        - (void)main API_AVAILABLE(macos(10.5), ios(2.0), watchos(2.0), tvos(9.0));	// thread body method
+
+        @end
+        //一些通知
+        FOUNDATION_EXPORT NSNotificationName const NSWillBecomeMultiThreadedNotification;
+        FOUNDATION_EXPORT NSNotificationName const NSDidBecomeSingleThreadedNotification;
+        FOUNDATION_EXPORT NSNotificationName const NSThreadWillExitNotification;
+
+        @interface NSObject (NSThreadPerformAdditions)
+
+        - (void)performSelectorOnMainThread:(SEL)aSelector withObject:(nullable id)arg waitUntilDone:(BOOL)wait modes:(nullable NSArray<NSString *> *)array;
+        - (void)performSelectorOnMainThread:(SEL)aSelector withObject:(nullable id)arg waitUntilDone:(BOOL)wait;
+            // equivalent to the first method with kCFRunLoopCommonModes
+
+        - (void)performSelector:(SEL)aSelector onThread:(NSThread *)thr withObject:(nullable id)arg waitUntilDone:(BOOL)wait modes:(nullable NSArray<NSString *> *)array API_AVAILABLE(macos(10.5), ios(2.0), watchos(2.0), tvos(9.0));
+        - (void)performSelector:(SEL)aSelector onThread:(NSThread *)thr withObject:(nullable id)arg waitUntilDone:(BOOL)wait API_AVAILABLE(macos(10.5), ios(2.0), watchos(2.0), tvos(9.0));
+            // equivalent to the first method with kCFRunLoopCommonModes
+        - (void)performSelectorInBackground:(SEL)aSelector withObject:(nullable id)arg API_AVAILABLE(macos(10.5), ios(2.0), watchos(2.0), tvos(9.0));
+
+        @end
+        ```
 3. GCD：目前苹果官方推荐的多线程开发方式
     1. GCD的两个重要概念：队列和执行方式
-    2. 队列：串行队列、并行队列、主队列、全局队列
+    2. 队列：串行队列、并行队列、主队列（特殊的串行队列）、全局队列（特殊的并行队列）
     3. 执行方式：同步、异步
     4. 线程死锁
         ```
@@ -25,7 +119,7 @@
         2. 串行队列 + 异步执行：会开辟新线程，但是由于是串行队列，所以子线程会按顺序执行
         3. 并行队列 + 同步执行：不会开辟新线程，顺序执行
         4. 并行队列 + 异步执行：会开辟新线程，随机顺序
-    6. dispatch_after
+    6. dispatch_after：注意，并不是3秒后执行任务，而是3秒后把任务追加到queue上，而且由于runloop的原因，可能会延迟
         ```
         dispatch_time_t time = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0*NSEC_PER_SEC));
         dispatch_after(time, dispatch_get_main_queue(), ^{
@@ -51,11 +145,14 @@
         dispatch_group_async(group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             NSLog(@"3========%@",[NSThread currentThread]);
         });
+        //此处也可使用dispatch_group_wait 返回0为执行完毕
+        //不过还是推荐使用dispatch_group_notify
         dispatch_group_notify(group, dispatch_get_main_queue(), ^{
             NSLog(@"4========%@",[NSThread currentThread]);
         });
         ```
         NSLog(@"4========%@",[NSThread currentThread]);都是最后一个执行的
+
 
     9. dispatch_barrier_async：类似栅栏的作用，保证该函数前的任务先执行
         ```
@@ -106,7 +203,42 @@
         });
         ```
         结果按顺序执行
-     12. GCD定时器
+     12. GCD定时器：注意timer一定要强引用
+        ```
+        self.timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, dispatch_get_global_queue(0, 0));
+        dispatch_time_t start = dispatch_time(DISPATCH_TIME_NOW, 3 * NSEC_PER_SEC);
+        dispatch_source_set_timer(self.timer, start, 2 * NSEC_PER_SEC, 0);
+        dispatch_source_set_event_handler(self.timer, ^{
+            NSLog(@"dispatch_source_t");
+        });
+        dispatch_resume(self.timer);
+        ```
+     13. dispatch_set_target_queue
+        1. 改变queue的优先级，因为自定义创建的线程优先级都为default
+        2. 比如存在多个串行队列，它们是并行执行的，如果使用```dispatch_set_target_queue```把第二个参数设置为串行队列，它们就会同步执行
+            ```
+            dispatch_queue_t serialQueue1 = dispatch_queue_create("com.cxy.serialQueue1", DISPATCH_QUEUE_SERIAL);
+            dispatch_queue_t serialQueue2 = dispatch_queue_create("com.cxy.serialQueue2", DISPATCH_QUEUE_SERIAL);
+            dispatch_queue_t serialQueue3 = dispatch_queue_create("com.cxy.serialQueue3", DISPATCH_QUEUE_SERIAL);
+            
+            dispatch_set_target_queue(serialQueue1, self.serialQueue);
+            dispatch_set_target_queue(serialQueue2, self.serialQueue);
+            dispatch_set_target_queue(serialQueue3, self.serialQueue);
+            dispatch_async(serialQueue1, ^{
+                NSLog(@"dispatch_set_target_queue 1");
+            });
+            dispatch_async(serialQueue2, ^{
+                NSLog(@"dispatch_set_target_queue 2");
+            });
+            dispatch_async(serialQueue3, ^{
+                NSLog(@"dispatch_set_target_queue 3");
+            });
+            ```
+        14. 暂停与恢复
+            ```
+            dispatch_suspend(queue);
+            dispatch_resume(queue);
+            ```
 4. NSOperation/NSOperationQueue：苹果对于GCD的封装
     1. NSOperation：抽象类，需要自定义子类，很少用
     2. NSBlockOperation/NSInvocationOperation：系统提供的NSOperation子类，一个是用block，一个是用selector
