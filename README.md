@@ -204,6 +204,7 @@
         ```
         结果按顺序执行
      12. GCD定时器：注意timer一定要强引用
+     
         ```
         self.timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, dispatch_get_global_queue(0, 0));
         dispatch_time_t start = dispatch_time(DISPATCH_TIME_NOW, 3 * NSEC_PER_SEC);
