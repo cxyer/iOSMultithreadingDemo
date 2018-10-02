@@ -253,17 +253,110 @@
             NSLog(@"3========%@",[NSThread currentThread]);
         }];
         [blockOperation start];
+        //可以看出是异步执行
         ```
-        可以看出是异步执行
 
-    3. NSOperationQueue：管理NSOperation，不需要调用start
         1. 任务优先级：queuePriority
-        2. 添加操作：addOperation
-        3. 添加依赖关系：[A addDependency:B] B先执行完才能执行A（注意添加依赖必须在添加操作前完成）
-        4. 最大并发数：maxConcurrentOperationCount 不要开太多，建议2~3为宜
-        5. 取消所有操作：cancelAllOperations；暂停所有操作：setSuspended 比如用户在操作UI的时候可以暂停队列
-        6. 操作完成的监听：setCompletionBlock 
-        7. 阻塞线程：- (void)waitUntilFinished; 阻塞当前线程，直到该操作完成
+        2. 添加依赖关系：[A addDependency:B] B先执行完才能执行A（注意添加依赖必须在添加操作前完成）
+        3. 阻塞线程：- (void)waitUntilFinished; 阻塞当前线程，直到该操作完成
+        4. 操作完成的监听：setCompletionBlock 
+    3. NSOperationQueue：管理NSOperation，不需要调用start
+        1. 添加操作：addOperation
+        2. 最大并发数：maxConcurrentOperationCount 不要开太多，建议2~3为宜
+        3. 取消所有操作：cancelAllOperations；暂停所有操作：setSuspended 比如用户在操作UI的时候可以暂停队列
+    4. 接口API
+        ```
+        @interface NSOperation : NSObject {
+        @private
+            id _private;
+            int32_t _private1;
+        #if __LP64__
+            int32_t _private1b;
+        #endif
+        }
+        //开始
+        - (void)start;
+        //入口，一般用于自定义子类
+        - (void)main;
+        //是否取消
+        @property (readonly, getter=isCancelled) BOOL cancelled;
+        //取消
+        - (void)cancel;
+        //是否在执行
+        @property (readonly, getter=isExecuting) BOOL executing;
+        //是否完成
+        @property (readonly, getter=isFinished) BOOL finished;
+        //是否异步执行，iOS7+被asynchronous代替
+        @property (readonly, getter=isConcurrent) BOOL concurrent; // To be deprecated; use and override 'asynchronous' below
+        @property (readonly, getter=isAsynchronous) BOOL asynchronous API_AVAILABLE(macos(10.8), ios(7.0), watchos(2.0), tvos(9.0));
+        //是否准备好，在start之前
+        @property (readonly, getter=isReady) BOOL ready;
+        //添加依赖
+        - (void)addDependency:(NSOperation *)op;
+        //移除依赖，不能在执行时移除
+        - (void)removeDependency:(NSOperation *)op;
+        //依赖数组
+        @property (readonly, copy) NSArray<NSOperation *> *dependencies;
+        //优先级枚举
+        typedef NS_ENUM(NSInteger, NSOperationQueuePriority) {
+            NSOperationQueuePriorityVeryLow = -8L,
+            NSOperationQueuePriorityLow = -4L,
+            NSOperationQueuePriorityNormal = 0,
+            NSOperationQueuePriorityHigh = 4,
+            NSOperationQueuePriorityVeryHigh = 8
+        };
+        //优先级
+        @property NSOperationQueuePriority queuePriority;
+        //完成后的回调
+        @property (nullable, copy) void (^completionBlock)(void) API_AVAILABLE(macos(10.6), ios(4.0), watchos(2.0), tvos(9.0));
+        //是否阻塞线程
+        - (void)waitUntilFinished API_AVAILABLE(macos(10.6), ios(4.0), watchos(2.0), tvos(9.0));
+
+        @property double threadPriority API_DEPRECATED("Not supported", macos(10.6,10.10), ios(4.0,8.0), watchos(2.0,2.0), tvos(9.0,9.0));
+
+        @property NSQualityOfService qualityOfService API_AVAILABLE(macos(10.10), ios(8.0), watchos(2.0), tvos(9.0));
+
+        @property (nullable, copy) NSString *name API_AVAILABLE(macos(10.10), ios(8.0), watchos(2.0), tvos(9.0));
+
+        @end
+        ```
+
+        ```
+        @interface NSOperationQueue : NSObject {
+        @private
+            id _private;
+            void *_reserved;
+        }
+        //添加操作
+        - (void)addOperation:(NSOperation *)op;
+        - (void)addOperations:(NSArray<NSOperation *> *)ops waitUntilFinished:(BOOL)wait API_AVAILABLE(macos(10.6), ios(4.0), watchos(2.0), tvos(9.0));
+
+        - (void)addOperationWithBlock:(void (^)(void))block API_AVAILABLE(macos(10.6), ios(4.0), watchos(2.0), tvos(9.0));
+        //操作数组
+        @property (readonly, copy) NSArray<__kindof NSOperation *> *operations;
+        //操作总数
+        @property (readonly) NSUInteger operationCount API_AVAILABLE(macos(10.6), ios(4.0), watchos(2.0), tvos(9.0));
+        //最大并发数
+        @property NSInteger maxConcurrentOperationCount;
+        //是否暂停
+        @property (getter=isSuspended) BOOL suspended;
+        //队列名字
+        @property (nullable, copy) NSString *name API_AVAILABLE(macos(10.6), ios(4.0), watchos(2.0), tvos(9.0));
+
+        @property NSQualityOfService qualityOfService API_AVAILABLE(macos(10.10), ios(8.0), watchos(2.0), tvos(9.0));
+        //主线程的队列
+        @property (nullable, assign /* actually retain */) dispatch_queue_t underlyingQueue API_AVAILABLE(macos(10.10), ios(8.0), watchos(2.0), tvos(9.0));
+        //取消所有操作
+        - (void)cancelAllOperations;
+        //阻塞线程
+        - (void)waitUntilAllOperationsAreFinished;
+        //获取当前队列
+        @property (class, readonly, strong, nullable) NSOperationQueue *currentQueue API_AVAILABLE(macos(10.6), ios(4.0), watchos(2.0), tvos(9.0));
+        //获取主队列
+        @property (class, readonly, strong) NSOperationQueue *mainQueue API_AVAILABLE(macos(10.6), ios(4.0), watchos(2.0), tvos(9.0));
+
+        @end
+        ```
 # 线程锁
 1. NSLock
     ```
