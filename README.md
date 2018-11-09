@@ -3,13 +3,13 @@
 2. NSThread：基本很少用
     1. 获取当前线程：```[NSThread currentThread]```
     2. 休眠当前线程
-        ```
+        ```objc
         + (void)sleepForTimeInterval:(NSTimeInterval)time;
         + (void)sleepUntilDate:(NSDate *)date;
         ```
     3. 给线程命名：```[NSThread currentThread].name```
     4. 其他接口
-        ```
+        ```objc
         @interface NSThread : NSObject  {
         @private
             id _private;
@@ -100,7 +100,7 @@
     2. 队列：串行队列、并行队列、主队列（特殊的串行队列）、全局队列（特殊的并行队列）
     3. 执行方式：同步、异步
     4. 线程死锁
-        ```
+        ```objc
         NSLog(@"1========%@",[NSThread currentThread]);
         dispatch_sync(dispatch_get_main_queue(), ^{
             NSLog(@"2========%@",[NSThread currentThread]);
@@ -110,7 +110,7 @@
         dispatch_sync在主线程，主线程需要等待dispatch_sync执行完才能继续执行，而dispatch_sync是同步执行需要等待主线程执行完才能继续执行，这样双方互相等待造成线程死锁
         #### 解决：dispatch_sync换成异步执行dispatch_async，或者dispatch_sync加入并行队列
     5. 创建队列
-        ```
+        ```objc
         self.serialQueue = dispatch_queue_create("com.cxy.serialQueue", DISPATCH_QUEUE_SERIAL);
         self.concurrentQueue = dispatch_queue_create("com.cxy.concurrentQueue", DISPATCH_QUEUE_CONCURRENT);
         ```
@@ -120,21 +120,21 @@
         3. 并行队列 + 同步执行：不会开辟新线程，顺序执行
         4. 并行队列 + 异步执行：会开辟新线程，随机顺序
     6. dispatch_after：注意，并不是3秒后执行任务，而是3秒后把任务追加到queue上，而且由于runloop的原因，可能会延迟
-        ```
+        ```objc
         dispatch_time_t time = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0*NSEC_PER_SEC));
         dispatch_after(time, dispatch_get_main_queue(), ^{
             NSLog(@"1========%@",[NSThread currentThread]);
         });
         ```
     7. dispatch_once：整个生命周期内只会执行一次，用来配合单例模式
-        ```
+        ```objc
         static dispatch_once_t onceToken;
         dispatch_once(&onceToken, ^{
             NSLog(@"1========%@",[NSThread currentThread]);
         });
         ```
     8. 队列组：先执行dispatch_group_async，全部完成后才会执行dispatch_group_notify
-        ```
+        ```objc
         dispatch_group_t group = dispatch_group_create();
         dispatch_group_async(group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             NSLog(@"1========%@",[NSThread currentThread]);
@@ -155,7 +155,7 @@
 
 
     9. dispatch_barrier_async：类似栅栏的作用，保证该函数前的任务先执行
-        ```
+        ```objc
         dispatch_async(self.concurrentQueue, ^{
             NSLog(@"1========%@",[NSThread currentThread]);
         });
@@ -175,7 +175,7 @@
         1、2和3、4的中间一定是dispatch_barrier_async
 
     10. dispatch_apply：重复执行，如果放在串行队列，则顺序执行，如果放在并行队列，则随机执行
-        ```
+        ```objc
         dispatch_apply(4, self.serialQueue, ^(size_t i) {
             NSLog(@"%zu========%@",i,[NSThread currentThread]);
         });
@@ -186,7 +186,7 @@
         ```
         #### 注意：该函数是同步执行，避免放在主线程，否则会造成线程死锁
     11. 信号量
-        ```
+        ```objc
         dispatch_semaphore_create 
         dispatch_semaphore_signal +1
         dispatch_semaphore_wait -1
@@ -204,7 +204,7 @@
         ```
         结果按顺序执行
     12. GCD定时器：注意timer一定要强引用
-        ```
+        ```objc
         self.timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, dispatch_get_global_queue(0, 0));
         dispatch_time_t start = dispatch_time(DISPATCH_TIME_NOW, 3 * NSEC_PER_SEC);
         dispatch_source_set_timer(self.timer, start, 2 * NSEC_PER_SEC, 0);
@@ -216,7 +216,7 @@
     13. dispatch_set_target_queue
         1. 改变queue的优先级，因为自定义创建的线程优先级都为default
         2. 比如存在多个串行队列，它们是并行执行的，如果使用```dispatch_set_target_queue```把第二个参数设置为串行队列，它们就会同步执行
-            ```
+            ```objc
             dispatch_queue_t serialQueue1 = dispatch_queue_create("com.cxy.serialQueue1", DISPATCH_QUEUE_SERIAL);
             dispatch_queue_t serialQueue2 = dispatch_queue_create("com.cxy.serialQueue2", DISPATCH_QUEUE_SERIAL);
             dispatch_queue_t serialQueue3 = dispatch_queue_create("com.cxy.serialQueue3", DISPATCH_QUEUE_SERIAL);
@@ -235,14 +235,14 @@
             });
             ```
     14. 暂停与恢复
-        ```
+        ```objc
         dispatch_suspend(queue);
         dispatch_resume(queue);
         ```
 4. NSOperation/NSOperationQueue：苹果对于GCD的封装
     1. NSOperation：抽象类，需要自定义子类，很少用
     2. NSBlockOperation/NSInvocationOperation：系统提供的NSOperation子类，一个是用block，一个是用selector
-        ```
+        ```objc
         NSBlockOperation *blockOperation = [NSBlockOperation blockOperationWithBlock:^{
             NSLog(@"1========%@",[NSThread currentThread]);
         }];
@@ -265,7 +265,7 @@
         2. 最大并发数：maxConcurrentOperationCount 不要开太多，建议2~3为宜
         3. 取消所有操作：cancelAllOperations；暂停所有操作：setSuspended 比如用户在操作UI的时候可以暂停队列
     4. 接口API
-        ```
+        ```objc
         @interface NSOperation : NSObject {
         @private
             id _private;
@@ -359,7 +359,7 @@
         ```
 # 线程锁
 1. NSLock
-    ```
+    ```objc
     //解决了多次访问同一资源
     NSMutableArray *arr = [NSMutableArray new];
         [arr addObjectsFromArray:@[@"1",@"2",@"3",@"4"]];
@@ -378,7 +378,7 @@
         }
     ```
 2. @synchronized
-    ```
+    ```objc
     NSMutableArray *arr = [NSMutableArray new];
         [arr addObjectsFromArray:@[@"1",@"2",@"3",@"4"]];
         for (int i = 0; i < 6; i++) {
