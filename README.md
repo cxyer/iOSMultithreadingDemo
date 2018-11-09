@@ -191,7 +191,7 @@
         dispatch_semaphore_signal +1
         dispatch_semaphore_wait -1
         ```
-        ```
+        ```objc
         dispatch_semaphore_t semaphore = dispatch_semaphore_create(1);
         dispatch_apply(4, self.concurrentQueue, ^(size_t i) {
             dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
@@ -321,7 +321,7 @@
         @end
         ```
 
-        ```
+        ```objc
         @interface NSOperationQueue : NSObject {
         @private
             id _private;
