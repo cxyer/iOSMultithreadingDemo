@@ -365,7 +365,7 @@ c语言层面，较少用，需要时再学习。。
     ```
 # 线程锁
 ## 补充
-iOS的一些锁，[线程安全](https://github.com/cxyer/iOSNote/wiki/%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8)
+iOS的一些锁，[线程安全](https://github.com/cxyer/iOSNote/wiki/%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8)
 ## 入门时的笔记
 1. NSLock
     ```objc
